@@ -34,16 +34,11 @@ app.get("/questions", (req, res) => {
   fetch(`https://opentdb.com/api.php?amount=5&difficulty=easy&type=multiple&category=19`)
   .then(response => response.json())
   .then(data => {
-    res.cookie('user-session', JSON.stringify({
-        questions: data.results,
-        answers: []
-    }), {
+    res.cookie('user-session', 'test-value', {
         httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000,
         secure: true,
-        sameSite: 'None', 
-        path: '/',
-        domain: 'vercel.app'
+        sameSite: 'None'
     });
     res.send(formatQuestions(data.results ?? []));
   });
