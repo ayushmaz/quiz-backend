@@ -42,7 +42,8 @@ app.get("/questions", (req, res) => {
         maxAge: 24 * 60 * 60 * 1000,
         secure: true,
         sameSite: 'None', 
-        path: '/'
+        path: '/',
+        domain: 'vercel.app'
     });
     res.send(formatQuestions(data.results ?? []));
   });
