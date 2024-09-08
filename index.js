@@ -35,7 +35,8 @@ app.get("/questions", (req, res) => {
   .then(response => response.json())
   .then(data => {
     res.cookie('user-session', 'test-value', {
-        maxAge: 24 * 60 * 60 * 1000
+        maxAge: 24 * 60 * 60 * 1000,
+        secure: true
     });
     res.send(formatQuestions(data.results ?? []));
   });
@@ -50,6 +51,7 @@ app.post('/question/:id/answer', (req, res) => {
     }
     res.cookie('user-session', JSON.stringify(parsedCookie), {
         maxAge: 24 * 60 * 60 * 1000,
+        secure: true
     });
     res.send('Answer saved')
 })
