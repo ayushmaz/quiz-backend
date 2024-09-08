@@ -35,7 +35,6 @@ app.get("/questions", (req, res) => {
   .then(response => response.json())
   .then(data => {
     res.cookie('user-session', 'test-value', {
-        httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000,
         secure: true,
         sameSite: 'None'
@@ -52,11 +51,9 @@ app.post('/question/:id/answer', (req, res) => {
         parsedCookie.answers[id - 1] = answer
     }
     res.cookie('user-session', JSON.stringify(parsedCookie), {
-        httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000,
         secure: true,
         sameSite: 'None',
-        path: '/'
     });
     res.send('Answer saved')
 })
