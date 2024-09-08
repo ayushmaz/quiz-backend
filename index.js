@@ -26,6 +26,9 @@ const formatQuestions = (questions) => {
     });
 }
 
+app.get('/', (req, res) => {
+    res.send('Hello from Express on Vercel!');
+});
 
 app.get("/questions", (req, res) => {
   fetch(`https://opentdb.com/api.php?amount=5&difficulty=easy&type=multiple&category=19`)
