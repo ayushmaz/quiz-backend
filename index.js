@@ -42,8 +42,7 @@ app.get("/questions", (req, res) => {
         maxAge: 24 * 60 * 60 * 1000,
         secure: true,
         sameSite: 'None', 
-        path: '/',
-        domain: 'localhost'
+        path: '/'
     });
     res.send(formatQuestions(data.results ?? []));
   });
