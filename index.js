@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
+const { encrypt, decrypt } = require("./utils");
 
 const app = express();
 
@@ -39,10 +40,12 @@ app.get("/questions", (req, res) => {
             console.log(`Retry attempt ${retryCount + 1}`);
             setTimeout(() => fetchQuestions(retryCount + 1), 5000);
           } else {
-            res.cookie('user-session', JSON.stringify({
+            const payload = JSON.stringify({
                 questions: data.results ?? [],
                 answers: []
-            }), {
+            });
+            const encryptedPayload = encrypt(payload);
+            res.cookie('user-session', encryptedPayload, {
                 maxAge: 24 * 60 * 60 * 1000,
                 secure: true,
                 httpOnly: true,
@@ -52,6 +55,7 @@ app.get("/questions", (req, res) => {
           }
         })
         .catch(err => {
+            console.log(err)
           res.status(500).send({ error: "Failed to fetch questions" });
         });
     };
@@ -61,11 +65,13 @@ app.get("/questions", (req, res) => {
 app.post('/question/:id/answer', (req, res) => {
     const { id } = req.params;
     const { answer } = req.body;
-    const parsedCookie = JSON.parse(req.cookies['user-session']);
-    if(parsedCookie && parsedCookie.answers){
-        parsedCookie.answers[id - 1] = answer
+    const parsedCookie = req.cookies['user-session'];
+    const decryptedData = JSON.parse(decrypt(parsedCookie));
+    if(decryptedData && decryptedData.answers){
+        decryptedData.answers[id - 1] = answer
     }
-    res.cookie('user-session', JSON.stringify(parsedCookie), {
+    const encryptedCookie = encrypt(JSON.stringify(decryptedData));
+    res.cookie('user-session', encryptedCookie, {
         maxAge: 24 * 60 * 60 * 1000,
         secure: true,
         httpOnly: true,
@@ -75,26 +81,27 @@ app.post('/question/:id/answer', (req, res) => {
 })
 
 app.post('/submit', (req, res) => {
-    const parsedCookie = JSON.parse(req.cookies['user-session']);
+    const cookie = req.cookies['user-session'];
+    const decryptedData = JSON.parse(decrypt(cookie));
     const scoreBoard = {
         totalScore: 0,
         correct: 0,
         incorrect: 0
     }
-    parsedCookie.questions.forEach((question, index) => {
-        if(parsedCookie.answers[index]?.[0] === question.correct_answer){
+    decryptedData.questions.forEach((question, index) => {
+        if(decryptedData.answers[index]?.[0] === question.correct_answer){
             scoreBoard.correct += 1;
         }
         else {
             scoreBoard.incorrect += 1;
         }
     })
-    scoreBoard.totalScore =( scoreBoard.correct / parsedCookie.questions.length) * 100;
+    scoreBoard.totalScore =( scoreBoard.correct / decryptedData.questions.length) * 100;
     res.send(scoreBoard)
 })
 
-app.listen(8000, () => {
-    console.log("Server is running on port 8000");
-    });
+// app.listen(8000, () => {
+//     console.log("Server is running on port 8000");
+//     });
 
-// module.exports = app;
+module.exports = app;
