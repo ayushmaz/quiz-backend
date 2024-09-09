@@ -34,7 +34,12 @@ app.get("/questions", (req, res) => {
   fetch(`https://opentdb.com/api.php?amount=5&difficulty=easy&type=multiple&category=19`)
   .then(response => response.json())
   .then(data => {
-    res.cookie('user-session', 'test-value');
+    res.cookie('user-session', 'test-value', {
+        maxAge: 24 * 60 * 60 * 1000, // 1 day
+        httpOnly: true, // Only accessible via HTTP(S), not JavaScript
+        secure: true, // Ensure cookies are only sent over HTTPS
+        sameSite: 'None' // Required for cross-site cookies
+      });
     res.send(formatQuestions(data.results ?? []));
   });
 });
