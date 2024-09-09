@@ -57,7 +57,9 @@ app.post('/question/:id/answer', (req, res) => {
     }
     res.cookie('user-session', JSON.stringify(parsedCookie), {
         maxAge: 24 * 60 * 60 * 1000,
-        secure: true
+        secure: true,
+        httpOnly: true,
+        sameSite: 'none'
     });
     res.send('Answer saved')
 })
