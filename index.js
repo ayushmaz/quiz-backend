@@ -50,7 +50,6 @@ app.get("/questions", (req, res) => {
 app.post('/question/:id/answer', (req, res) => {
     const { id } = req.params;
     const { answer } = req.body;
-    console.log(req.cookies)
     const parsedCookie = JSON.parse(req.cookies['user-session']);
     if(parsedCookie && parsedCookie.answers){
         parsedCookie.answers[id - 1] = answer
@@ -66,7 +65,6 @@ app.post('/question/:id/answer', (req, res) => {
 
 app.post('/submit', (req, res) => {
     const parsedCookie = JSON.parse(req.cookies['user-session']);
-    console.log(req.cookies['user-session'])
     const scoreBoard = {
         totalScore: 0,
         correct: 0,
@@ -84,8 +82,8 @@ app.post('/submit', (req, res) => {
     res.send(scoreBoard)
 })
 
-app.listen(8000, () => {
-    console.log("Server is running on port 8000");
-    });
+// app.listen(8000, () => {
+//     console.log("Server is running on port 8000");
+//     });
 
-// module.exports = app;
+module.exports = app;
