@@ -34,10 +34,7 @@ app.get("/questions", (req, res) => {
   fetch(`https://opentdb.com/api.php?amount=5&difficulty=easy&type=multiple&category=19`)
   .then(response => response.json())
   .then(data => {
-    res.cookie('user-session', 'test-value', {
-        maxAge: 24 * 60 * 60 * 1000,
-        secure: true
-    });
+    res.cookie('user-session', 'test-value');
     res.send(formatQuestions(data.results ?? []));
   });
 });
