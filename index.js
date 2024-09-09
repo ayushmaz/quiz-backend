@@ -8,7 +8,7 @@ const app = express();
 
 
 app.use(cors({
-    origin: 'https://upraised-quiz-ten.vercel.app',
+    origin: ['http://localhost:5173', 'https://upraised-quiz-ten.vercel.app'],
     credentials: true
 }));
 
@@ -34,12 +34,15 @@ app.get("/questions", (req, res) => {
   fetch(`https://opentdb.com/api.php?amount=5&difficulty=easy&type=multiple&category=19`)
   .then(response => response.json())
   .then(data => {
-    res.cookie('user-session', 'test-value', {
-        maxAge: 24 * 60 * 60 * 1000, // 1 day
-        httpOnly: true, // Only accessible via HTTP(S), not JavaScript
-        secure: true, // Ensure cookies are only sent over HTTPS
-        sameSite: 'None' // Required for cross-site cookies
-      });
+    res.cookie('user-session', JSON.stringify({
+        questions: data.results ?? [],
+        answers: []
+    }), {
+        maxAge: 24 * 60 * 60 * 1000,
+        secure: true,
+        httpOnly: true,
+        sameSite: 'none',
+    });
     res.send(formatQuestions(data.results ?? []));
   });
 });
@@ -47,6 +50,7 @@ app.get("/questions", (req, res) => {
 app.post('/question/:id/answer', (req, res) => {
     const { id } = req.params;
     const { answer } = req.body;
+    console.log(req.cookies)
     const parsedCookie = JSON.parse(req.cookies['user-session']);
     if(parsedCookie && parsedCookie.answers){
         parsedCookie.answers[id - 1] = answer
@@ -78,5 +82,8 @@ app.post('/submit', (req, res) => {
     res.send(scoreBoard)
 })
 
+app.listen(8000, () => {
+    console.log("Server is running on port 8000");
+    });
 
-module.exports = app;
+// module.exports = app;
