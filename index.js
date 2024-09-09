@@ -31,20 +31,31 @@ app.get('/', (req, res) => {
 });
 
 app.get("/questions", (req, res) => {
-  fetch(`https://opentdb.com/api.php?amount=5&difficulty=easy&type=multiple&category=19`)
-  .then(response => response.json())
-  .then(data => {
-    res.cookie('user-session', JSON.stringify({
-        questions: data.results ?? [],
-        answers: []
-    }), {
-        maxAge: 24 * 60 * 60 * 1000,
-        secure: true,
-        httpOnly: true,
-        sameSite: 'none',
-    });
-    res.send(formatQuestions(data.results ?? []));
-  });
+    const fetchQuestions = (retryCount = 0) => {
+      fetch(`https://opentdb.com/api.php?amount=5&type=multiple&difficulty=easy`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.response_code === 5 && retryCount < 3) {
+            console.log(`Retry attempt ${retryCount + 1}`);
+            setTimeout(() => fetchQuestions(retryCount + 1), 5000);
+          } else {
+            res.cookie('user-session', JSON.stringify({
+                questions: data.results ?? [],
+                answers: []
+            }), {
+                maxAge: 24 * 60 * 60 * 1000,
+                secure: true,
+                httpOnly: true,
+                sameSite: 'none',
+            });
+            res.send(formatQuestions(data.results ?? []));
+          }
+        })
+        .catch(err => {
+          res.status(500).send({ error: "Failed to fetch questions" });
+        });
+    };
+    fetchQuestions();
 });
 
 app.post('/question/:id/answer', (req, res) => {
@@ -71,7 +82,7 @@ app.post('/submit', (req, res) => {
         incorrect: 0
     }
     parsedCookie.questions.forEach((question, index) => {
-        if(parsedCookie.answers[index].includes(question.correct_answer)){
+        if(parsedCookie.answers[index]?.[0] === question.correct_answer){
             scoreBoard.correct += 1;
         }
         else {
@@ -82,8 +93,8 @@ app.post('/submit', (req, res) => {
     res.send(scoreBoard)
 })
 
-// app.listen(8000, () => {
-//     console.log("Server is running on port 8000");
-//     });
+app.listen(8000, () => {
+    console.log("Server is running on port 8000");
+    });
 
-module.exports = app;
+// module.exports = app;
